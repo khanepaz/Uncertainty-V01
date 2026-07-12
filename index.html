@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>محاسبه‌گر عدم قطعیت پیشرفته</title>
+    <!-- External Libraries -->
+    <link rel="manifest" href="manifest.json">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/contrib/auto-render.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap');
+:root {
+    --primary-color: #667eea;
+    --primary-dark: #764ba2;
+    --secondary-color: #64748b;
+    --success-color: #059669;
+    --warning-color: #d97706;
+    --danger-color: #dc2626;
+    --background-color: #f8fafc;
+    --surface-color: #ffffff;
+    --text-color: #1e293b;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --border-radius: 12px;
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+
+.main-container {
+    background: var(--background-color);
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+.app-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-lg);
+}
+.app-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.app-subtitle {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    font-weight: 400;
+}
+.card {
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+    overflow: hidden;
+    transition: var(--transition);
+}
+.card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+.card-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 1.5rem;
+    border-bottom: none;
+}
+.card-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.card-body {
+    padding: 2rem;
+}
+.form-section {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--border-color);
+}
+.form-section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.form-label {
+    font-weight: 500;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+.form-control, .form-select {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    background: var(--surface-color);
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    outline: none;
+}
+.btn {
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+}
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #047857);
+    color: white;
+}
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #b91c1c);
+    color: white;
+}
+.btn-secondary {
+    background: linear-gradient(135deg, var(--secondary-color), #475569);
+    color: white;
+}
+.parameter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.test-fields {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f1f5f9;
+    border-radius: 8px;
+}
+#reso{
+    font-size: 0.7rem;
+    color: #64748b;
+}
+.math-equation {
+    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    direction: ltr;
+    text-align: center;
+    font-size: 1.1rem;
+    box-shadow: var(--shadow-sm);
+    overflow-x: auto;
+}
+.results-section {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    border: 2px solid #0ea5e9;
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    margin: 2rem 0;
+}
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-sm);
+}
+.result-label {
+    font-weight: 600;
+    color: var(--text-color);
+}
+.result-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    font-family: 'Courier New', monospace;
+}
+.alert {
+    border-radius: 8px;
+    border: none;
+    padding: 1rem 1.5rem;
+    margin: 1rem 0;
+    font-weight: 500;
+}
+.alert-danger {
+    background: linear-gradient(135deg, #fef2f2, #fee2e2);
+    color: var(--danger-color);
+    border-left: 4px solid var(--danger-color);
+}
+.alert-info {
+    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+    color: #0c4a6e;
+    border-left: 4px solid #0ea5e9;
+}
+.progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 2rem 0;
+}
+    /* Footer */
+    footer {
+      margin-top: 4rem;
+      padding: 2rem 0;
+      background: rgba(31, 41, 55, 0.9);
+      backdrop-filter: blur(16px);
+      color: white;
+      text-align: center;
+      border-radius: var(--border-radius) var(--border-radius) 0 0;
+    }
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--success-color));
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+.step-indicator {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    padding: 0 1rem;
+}
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+}
+.step-number {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--border-color);
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    transition: var(--transition);
+}
+.step.active .step-number {
+    background: var(--primary-color);
+    color: white;
+}
+.step.completed .step-number {
+    background: var(--success-color);
+    color: white;
+}
+.step-title {
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--secondary-color);
+    font-weight: 500;
+}
+.step.active .step-title {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+.floating-action {
+    position: fixed;
+    bottom: 2rem;
+    left: 2rem;
+    z-index: 1000;
+}
+.fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border: none;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 20px -3px rgb(0 0 0 / 0.2);
+}
+@media (max-width: 768px) {
+    .app-title {
+        font-size: 2rem;
+    }
+    .parameter-grid {
+        grid-template-columns: 1fr;
+    }
+    .test-fields {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    }
+    .math-equation {
+        font-size: 0.8rem;
+        padding: 1rem;
+    }
+    .floating-action {
+        bottom: 1rem;
+        left: 1rem;
+    }
+}
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+</style>
+</head>
+<body>
+<div class="main-container">
+<div class="container">
+    <div class="app-header fade-in header">
+        <h1 class="app-title">
+            <i class="fas fa-calculator"></i>
+            محاسبه‌گر عدم قطعیت پیشرفته
+        </h1>
+        <p class="app-subtitle">ابزار دقیق و حرفه‌ای برای محاسبه عدم قطعیت اندازه‌گیری</p>
+    </div>
+    <div class="step-indicator">
+        <div class="step completed" id="step-indicator-1">
+            <div class="step-number">1</div>
+            <div class="step-title">انتخاب پارامتر</div>
+        </div>
+        <div class="step active" id="step-indicator-2">
+            <div class="step-number">2</div>
+            <div class="step-title">تعریف زیرپارامترها</div>
+        </div>
+        <div class="step" id="step-indicator-3">
+            <div class="step-number">3</div>
+            <div class="step-title">منابع اضافی</div>
+        </div>
+        <div class="step" id="step-indicator-4">
+            <div class="step-number">4</div>
+            <div class="step-title">نتایج</div>
+        </div>
+    </div>
+    <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill" style="width: 50%;"></div>
+    </div>
+    <!-- مرحله 1: انتخاب پارامتر اصلی -->
+    <section id="step1" class="card fade-in">
+        <div class="card-header">
+            <h2><i class="fas fa-cog"></i> مرحله 1: انتخاب پارامتر اصلی</h2>
+        </div>
+        <div class="card-body">
+            <div class="form-section">
+                <div class="parameter-grid">
+                    <div>
+                        <label for="mainParameter" class="form-label">
+                            <i class="fas fa-list"></i> پارامتر اصلی:
+                        </label>
+                        <select id="mainParameter" class="form-select" onchange="toggleCustomParameter()">
+                            <option value="density">چگالی (ρ = m / V)</option>
+                            <option value="stress">تنش (σ = F / A)</option>
+                            <option value="elasticModulus">مدول الاستیسیته (E = σ / ε)</option>
+                            <option value="custom">پارامتر سفارشی</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="customParameter" style="display: none;">
+                    <h3 class="form-section-title">
+                        <i class="fas fa-edit"></i> تعریف پارامتر جدید
+                    </h3>
+                    <div class="parameter-grid">
+                        <div>
+                            <label for="customParamName" class="form-label">نام پارامتر:</label>
+                            <input type="text" id="customParamName" class="form-control" placeholder="مثلاً: چگالی">
+                        </div>
+                        <div>
+                            <label for="formula" class="form-label">فرمول:</label>
+                            <input type="text" id="formula" class="form-control" style="text-align: left;" dir="ltr" placeholder="مثلاً: σ = F / A">
+                            <small class="form-text text-muted">
+                                فرمول را به شکل y = عبارت وارد کنید. عملیات مجاز: +, -, *, /, ^, sqrt(x)
+                            </small>
+                        </div>
+                        <div>
+                            <label for="subParametersCount" class="form-label">تعداد زیرپارامترها:</label>
+                            <input type="number" id="subParametersCount" class="form-control" min="1" value="2">
+                        </div>
+                        <div style="display: flex; align-items: end;">
+                            <button class="btn btn-primary" onclick="validateAndGenerateSubParameters()">
+                                <i class="fas fa-check"></i> تأیید
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- مرحله 2: تعریف زیرپارامترها -->
+    <section id="step2" class="card" style="display: block;">
+        <div class="card-header">
+            <h2><i class="fas fa-sliders-h"></i> مرحله 2: تعریف زیرپارامترها</h2>
+        </div>
+        <div class="card-body">
+            <div id="subParameters"><div class="form-section fade-in">
+            <div class="form-section-title">
+                <i class="fas fa-wrench"></i> زیرپارامتر 1: جرم (m)
+            </div>
+            <div class="parameter-grid">
+                <div>
+                    <label class="form-label">نام:</label>
+                    <input type="text" id="subParamName0" class="form-control" value="جرم (m)">
+                </div>
+                <div>
+                    <label class="form-label">مقدار اندازه‌گیری:</label>
+                    <input type="number" id="subParamValue0" class="form-control" step="any" placeholder="0.0">
+                </div>
+                <div>
+                    <label class="form-label">واحد:</label>
+                    <input type="text" id="subParamUnit0" class="form-control" value="kg">
+                </div>
+                <div>
+                    <label class="form-label">نوع:</label>
+                    <select id="subParamType0" class="form-select" onchange="toggleSubParameterFields(0)">
+                        <option value="variable">متغیر</option>
+                        <option value="constant">ثابت</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">تعداد تست تکراری:</label>
+                    <input type="number" id="subParamTests0" class="form-control" min="1" value="3" onchange="generateTestFields(0)">
+                </div>
+                <div>
+                    <label class="form-label">رزولوشن دستگاه:</label>
+                    <input type="number" id="subParamResolution0" class="form-control" step="any" placeholder="0.001">
+                </div>
+                <div>
+                    <label class="form-label">توزیع رزولوشن:</label>
+                    <select id="subParamResolutionDist0" class="form-select">
+                        <option value="rectangular">مستطیلی</option>
+                        <option value="triangular">مثلثی</option>
+                        <option value="normal">نرمال</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">عدم قطعیت کالیبراسیون:</label>
+                    <input type="number" id="subParamCalibration0" class="form-control" step="any" placeholder="0.0">
+                </div>
+                <div>
+                    <label class="form-label">عدم قطعیت دریفت:</label>
+                    <input type="number" id="subParamDrift0" class="form-control" step="any" placeholder="0.0">
+                </div>
+            </div>
+            <div id="testFields0" class="test-fields" style="display: grid;"><div style="grid-column: 1 / -1;"><strong><i class="fas fa-vial"></i> مقادیر تست‌های تکراری:</strong></div><div>
+            <label class="form-label">تست 1:</label>
+            <input type="number" id="testValue0_0" class="form-control" step="any" placeholder="مقدار">
+        </div><div>
+            <label class="form-label">تست 2:</label>
+            <input type="number" id="testValue0_1" class="form-control" step="any" placeholder="مقدار">
+        </div><div>
+            <label class="form-label">تست 3:</label>
+            <input type="number" id="testValue0_2" class="form-control" step="any" placeholder="مقدار">
+        </div></div>
+            <button class="btn btn-danger mt-3" onclick="deleteSubParameter(0)">
+                <i class="fas fa-trash"></i> حذف زیرپارامتر
+            </button>
+        </div><div class="form-section fade-in">
+            <div class="form-section-title">
+                <i class="fas fa-wrench"></i> زیرپارامتر 2: حجم (V)
+            </div>
+            <div class="parameter-grid">
+                <div>
+                    <label class="form-label">نام:</label>
+                    <input type="text" id="subParamName1" class="form-control" value="حجم (V)">
+                </div>
+                <div>
+                    <label class="form-label">مقدار اندازه‌گیری:</label>
+                    <input type="number" id="subParamValue1" class="form-control" step="any" placeholder="0.0">
+                </div>
+                <div>
+                    <label class="form-label">واحد:</label>
+                    <input type="text" id="subParamUnit1" class="form-control" value="m³">
+                </div>
+                <div>
+                    <label class="form-label">نوع:</label>
+                    <select id="subParamType1" class="form-select" onchange="toggleSubParameterFields(1)">
+                        <option value="variable">متغیر</option>
+                        <option value="constant">ثابت</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">تعداد تست تکراری:</label>
+                    <input type="number" id="subParamTests1" class="form-control" min="1" value="3" onchange="generateTestFields(1)">
+                </div>
+                <div>
+                    <label class="form-label">رزولوشن دستگاه:</label>
+                    <input type="number" id="subParamResolution1" class="form-control" step="any" placeholder="0.001">
+                </div>
+                <div>
+                    <label class="form-label">توزیع رزولوشن:</label>
+                    <select id="subParamResolutionDist1" class="form-select">
+                        <option value="rectangular">مستطیلی</option>
+                        <option value="triangular">مثلثی</option>
+                        <option value="normal">نرمال</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">عدم قطعیت کالیبراسیون:</label>
+                    <input type="number" id="subParamCalibration1" class="form-control" step="any" placeholder="0.0">
+                </div>
+                <div>
+                    <label class="form-label">عدم قطعیت دریفت:</label>
+                    <input type="number" id="subParamDrift1" class="form-control" step="any" placeholder="0.0">
+                </div>
+            </div>
+            <div id="testFields1" class="test-fields" style="display: grid;"><div style="grid-column: 1 / -1;"><strong><i class="fas fa-vial"></i> مقادیر تست‌های تکراری:</strong></div><div>
+            <label class="form-label">تست 1:</label>
+            <input type="number" id="testValue1_0" class="form-control" step="any" placeholder="مقدار">
+        </div><div>
+            <label class="form-label">تست 2:</label>
+            <input type="number" id="testValue1_1" class="form-control" step="any" placeholder="مقدار">
+        </div><div>
+            <label class="form-label">تست 3:</label>
+            <input type="number" id="testValue1_2" class="form-control" step="any" placeholder="مقدار">
+        </div></div>
+            <button class="btn btn-danger mt-3" onclick="deleteSubParameter(1)">
+                <i class="fas fa-trash"></i> حذف زیرپارامتر
+            </button>
+        </div></div>
+        </div>
+    </section>
+    <!-- مرحله 3: منابع اضافی -->
+    <section id="step3" class="card" style="display: block;">
+        <div class="card-header">
+            <h2><i class="fas fa-plus-circle"></i> مرحله 3: منابع اضافی (اختیاری)</h2>
+        </div>
+        <div class="card-body">
+            <button class="btn btn-success mb-3" onclick="addExternalSource()">
+                <i class="fas fa-plus"></i> افزودن منبع جدید
+            </button>
+            <div id="externalSources"></div>
+        </div>
+    </section>
+    <!-- مرحله 4: محاسبه و خروجی -->
+    <section id="step4" class="card" style="display: block;">
+        <div class="card-header">
+            <h2><i class="fas fa-chart-line"></i> مرحله 4: نتایج محاسبات</h2>
+        </div>
+        <div class="card-body">
+            <div class="form-section">
+                <div class="parameter-grid">
+                    <div>
+                        <label for="resolutionDivisor" class="form-label">
+                            <i class="fas fa-divide"></i> روش محاسبه رزولوشن: <span id="reso">(اگر عدد رزولوشنی که در برگه کالیبراسیون تجهیز درج شده است را عینا وارد کرده اید گزینه پیش فرض را انتخاب نمایید)</span>
+                        </label>
+                        <select id="resolutionDivisor" class="form-select">
+                            <option value="2sqrt3"> divide to 2√3 (پیش‌فرض)</option>
+                            <option value="sqrt3"> divide to √3</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-lg mt-3" onclick="calculateUncertainty()">
+                    <i class="fas fa-calculator"></i> محاسبه عدم قطعیت
+                </button>
+            </div>
+            <div id="results" class="results-section" style="display: none;"></div>
+            <div id="equations" class="math-equation" style="display: none;"></div>
+            <div class="mt-4" id="export-section" style="display: none;">
+                <button class="btn btn-success me-2" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> خروجی اکسل
+                </button>
+                <button class="btn btn-secondary" onclick="window.print()">
+                    <i class="fas fa-print"></i> چاپ نتایج
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+</div>
+<div class="floating-action">
+<button class="fab" onclick="scrollToTop()" title="بازگشت به بالا">
+    <i class="fas fa-arrow-up"></i>
+</button>
+</div>
+<footer>
+    <p>ابزار محاسبه عدم قطعیت هوشمند</p>
+    <p style="color: #0f172a;" id="footerText">طراحی و توسعه سایت - حامد خانه پز - 1404</p>
+  </footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+// متغیرهای سراسری
+const predefinedParameters = {
+    density: {
+        name: 'چگالی',
+        formula: 'ρ = m / V',
+        subParameters: [
+            { name: 'جرم (m)', unit: 'kg', symbol: 'm' },
+            { name: 'حجم (V)', unit: 'm³', symbol: 'V' }
+        ],
+        partialDerivatives: { m: '1/V', V: '-m/(V^2)' }
+    },
+    stress: {
+        name: 'تنش',
+        formula: 'σ = F / A',
+        subParameters: [
+            { name: 'نیرو (F)', unit: 'N', symbol: 'F' },
+            { name: 'مساحت (A)', unit: 'm²', symbol: 'A' }
+        ],
+        partialDerivatives: { F: '1/A', A: '-F/(A^2)' }
+    },
+    elasticModulus: {
+        name: 'مدول الاستیسیته',
+        formula: 'E = σ / ε',
+        subParameters: [
+            { name: 'تنش (σ)', unit: 'Pa', symbol: 'σ' },
+            { name: 'کرنش (ε)', unit: '', symbol: 'ε' }
+        ],
+        partialDerivatives: { σ: '1/ε', ε: '-σ/(ε^2)' }
+    }
+};
+let subParameters = [];
+let externalSources = [];
+let detailedResults = [];
+let currentStep = 1;
+
+// تابع مدیریت فیلدهای زیرپارامتر بر اساس نوع (ثابت/متغیر)
+function toggleSubParameterFields(index) {
+    const type = document.getElementById(`subParamType${index}`).value;
+    const isConstant = type === 'constant';
+
+    const testCountInput = document.getElementById(`subParamTests${index}`);
+    const testFieldsDiv = document.getElementById(`testFields${index}`);
+    const resolutionInput = document.getElementById(`subParamResolution${index}`);
+    const resolutionDistSelect = document.getElementById(`subParamResolutionDist${index}`);
+    const calibrationInput = document.getElementById(`subParamCalibration${index}`);
+    const driftInput = document.getElementById(`subParamDrift${index}`);
+
+    testCountInput.disabled = isConstant;
+    resolutionInput.disabled = isConstant;
+    resolutionDistSelect.disabled = isConstant;
+    calibrationInput.disabled = isConstant;
+    driftInput.disabled = isConstant;
+
+    if (isConstant) {
+        testFieldsDiv.style.display = 'none';
+    } else {
+        testFieldsDiv.style.display = 'grid';
+        generateTestFields(index); // بازسازی فیلدهای تست
+    }
+}
+
+// مدیریت مراحل
+function updateStepIndicator(step) {
+    for (let i = 1; i <= 4; i++) {
+        const stepEl = document.getElementById(`step-indicator-${i}`);
+        stepEl.classList.remove('active', 'completed');
+        if (i < step) {
+            stepEl.classList.add('completed');
+        } else if (i === step) {
+            stepEl.classList.add('active');
+        }
+    }
+    const progress = (step / 4) * 100;
+    document.getElementById('progress-fill').style.width = `${progress}%`;
+    currentStep = step;
+}
+
+function toggleCustomParameter() {
+    const mainParameter = document.getElementById('mainParameter').value;
+    const customParameterDiv = document.getElementById('customParameter');
+    if (mainParameter === 'custom') {
+        customParameterDiv.style.display = 'block';
+        customParameterDiv.classList.add('fade-in');
+    } else {
+        customParameterDiv.style.display = 'none';
+        validateAndGenerateSubParameters();
+    }
+}
+
+function validateAndGenerateSubParameters() {
+    const mainParameter = document.getElementById('mainParameter').value;
+    if (mainParameter === 'custom') {
+        const formula = document.getElementById('formula').value.trim();
+        const customParamName = document.getElementById('customParamName').value.trim();
+        const subParametersCount = parseInt(document.getElementById('subParametersCount').value);
+        if (!customParamName) {
+            showError('لطفاً نام پارامتر را وارد کنید.');
+            return;
+        }
+        if (!formula || !formula.includes('=')) {
+            showError('لطفاً فرمول را به شکل y = عبارت وارد کنید.');
+            return;
+        }
+        if (subParametersCount < 1) {
+            showError('تعداد زیرپارامترها باید حداقل 1 باشد.');
+            return;
+        }
+        try {
+            const expr = formula.split('=')[1].trim();
+            math.parse(expr);
+        } catch (e) {
+            showError('سینتکس فرمول نامعتبر است. از عملیات مجاز (+, -, *, /, ^, sqrt) استفاده کنید.');
+            return;
+        }
+    }
+    generateSubParameters();
+}
+
+function generateSubParameters() {
+    const mainParameter = document.getElementById('mainParameter').value;
+    const subParametersDiv = document.getElementById('subParameters');
+    subParametersDiv.innerHTML = '';
+    subParameters = [];
+    let subParams = [];
+
+    if (mainParameter !== 'custom') {
+        subParams = predefinedParameters[mainParameter].subParameters;
+    } else {
+        const count = parseInt(document.getElementById('subParametersCount').value);
+        const formula = document.getElementById('formula').value.split('=')[1].trim();
+        try {
+            const parsed = math.parse(formula);
+            const variables = [];
+            parsed.traverse(function (node) {
+                if (node.isSymbolNode && !math[node.name] && node.name !== 'e' && node.name !== 'pi') {
+                    if (!variables.includes(node.name)) {
+                        variables.push(node.name);
+                    }
+                }
+            });
+            for (let i = 0; i < count; i++) {
+                subParams.push({
+                    name: variables[i] || `زیرپارامتر ${i + 1}`,
+                    unit: '',
+                    symbol: variables[i] || `x${i + 1}`
+                });
+            }
+        } catch (e) {
+            showError(`خطا در تجزیه فرمول: ${e.message}`);
+            return;
+        }
+    }
+
+    subParams.forEach((param, i) => {
+        const subParamDiv = document.createElement('div');
+        subParamDiv.className = 'form-section fade-in';
+        subParamDiv.innerHTML = `
+            <div class="form-section-title">
+                <i class="fas fa-wrench"></i> زیرپارامتر ${i + 1}: ${param.name}
+            </div>
+            <div class="parameter-grid">
+                <div>
+                    <label class="form-label">نام:</label>
+                    <input type="text" id="subParamName${i}" class="form-control" value="${param.name}" />
+                </div>
+                <div>
+                    <label class="form-label">مقدار اندازه‌گیری:</label>
+                    <input type="number" id="subParamValue${i}" class="form-control" step="any" placeholder="0.0" />
+                </div>
+                <div>
+                    <label class="form-label">واحد:</label>
+                    <input type="text" id="subParamUnit${i}" class="form-control" value="${param.unit}" />
+                </div>
+                <div>
+                    <label class="form-label">نوع:</label>
+                    <select id="subParamType${i}" class="form-select" onchange="toggleSubParameterFields(${i})">
+                        <option value="variable">متغیر</option>
+                        <option value="constant">ثابت</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">تعداد تست تکراری:</label>
+                    <input type="number" id="subParamTests${i}" class="form-control" min="1" value="3" onchange="generateTestFields(${i})" />
+                </div>
+                <div>
+                    <label class="form-label">رزولوشن دستگاه:</label>
+                    <input type="number" id="subParamResolution${i}" class="form-control" step="any" placeholder="0.001" />
+                </div>
+                <div>
+                    <label class="form-label">توزیع رزولوشن:</label>
+                    <select id="subParamResolutionDist${i}" class="form-select">
+                        <option value="rectangular">مستطیلی</option>
+                        <option value="triangular">مثلثی</option>
+                        <option value="normal">نرمال</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">عدم قطعیت کالیبراسیون:</label>
+                    <input type="number" id="subParamCalibration${i}" class="form-control" step="any" placeholder="0.0" />
+                </div>
+                <div>
+                    <label class="form-label">عدم قطعیت دریفت:</label>
+                    <input type="number" id="subParamDrift${i}" class="form-control" step="any" placeholder="0.0" />
+                </div>
+            </div>
+            <div id="testFields${i}" class="test-fields"></div>
+            <button class="btn btn-danger mt-3" onclick="deleteSubParameter(${i})">
+                <i class="fas fa-trash"></i> حذف زیرپارامتر
+            </button>
+        `;
+        subParametersDiv.appendChild(subParamDiv);
+        subParameters.push({ id: i, symbol: param.symbol });
+        setTimeout(() => {
+            toggleSubParameterFields(i); // تنظیم اولیه فیلدها
+        }, 100);
+    });
+
+    document.getElementById('step2').style.display = 'block';
+    document.getElementById('step3').style.display = 'block';
+    document.getElementById('step4').style.display = 'block';
+    updateStepIndicator(2);
+}
+
+function generateTestFields(index) {
+    const testCount = parseInt(document.getElementById(`subParamTests${index}`).value) || 0;
+    const testFieldsDiv = document.getElementById(`testFields${index}`);
+    const type = document.getElementById(`subParamType${index}`).value;
+    if (type === 'constant' || testCount <= 0) {
+        testFieldsDiv.innerHTML = '';
+        testFieldsDiv.style.display = 'none';
+        return;
+    }
+    testFieldsDiv.style.display = 'grid';
+    testFieldsDiv.innerHTML = '';
+    const titleDiv = document.createElement('div');
+    titleDiv.style.gridColumn = '1 / -1';
+    titleDiv.innerHTML = '<strong><i class="fas fa-vial"></i> مقادیر تست‌های تکراری:</strong>';
+    testFieldsDiv.appendChild(titleDiv);
+
+    for (let j = 0; j < testCount; j++) {
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <label class="form-label">تست ${j + 1}:</label>
+            <input type="number" id="testValue${index}_${j}" class="form-control" step="any" placeholder="مقدار" />
+        `;
+        testFieldsDiv.appendChild(div);
+    }
+}
+
+function deleteSubParameter(index) {
+    if (subParameters.length <= 1) {
+        showError('حداقل یک زیرپارامتر باید وجود داشته باشد.');
+        return;
+    }
+    if (confirm('آیا از حذف این زیرپارامتر مطمئن هستید؟')) {
+        subParameters = subParameters.filter(param => param.id !== index);
+        generateSubParameters();
+    }
+}
+
+function addExternalSource() {
+    const externalSourcesDiv = document.getElementById('externalSources');
+    const sourceId = externalSources.length;
+    const sourceDiv = document.createElement('div');
+    sourceDiv.className = 'form-section fade-in';
+    sourceDiv.innerHTML = `
+        <div class="form-section-title">
+            <i class="fas fa-external-link-alt"></i> منبع اضافی ${sourceId + 1}
+        </div>
+        <div class="parameter-grid">
+            <div>
+                <label class="form-label">نام منبع:</label>
+                <input type="text" id="sourceName${sourceId}" class="form-control" placeholder="مثلاً: تأثیر دما" />
+            </div>
+            <div>
+                <label class="form-label">مقدار عدم قطعیت گسترده:</label>
+                <input type="number" id="sourceUncertainty${sourceId}" class="form-control" step="any" placeholder="0.0" />
+            </div>
+
+            <div>
+                <label class="form-label">ضریب پوشش (K):</label>
+                <input type="number" id="sourceK${sourceId}" class="form-control" value="2" step="any" />
+            </div>
+            <div style="display: flex; align-items: end;">
+                <button class="btn btn-danger" onclick="deleteExternalSource(${sourceId})">
+                    <i class="fas fa-trash"></i> حذف
+                </button>
+            </div>
+        </div>
+    `;
+    externalSourcesDiv.appendChild(sourceDiv);
+    externalSources.push({ id: sourceId });
+    updateStepIndicator(3);
+}
+
+function deleteExternalSource(id) {
+    if (confirm('آیا از حذف این منبع اضافی مطمئن هستید؟')) {
+        externalSources = externalSources.filter(source => source.id !== id);
+        const externalSourcesDiv = document.getElementById('externalSources');
+        externalSourcesDiv.innerHTML = '';
+        const tempSources = [...externalSources];
+        externalSources = [];
+        tempSources.forEach(() => addExternalSource());
+    }
+}
+
+function calculateUncertainty() {
+    const mainParameter = document.getElementById('mainParameter').value;
+    const resolutionDivisor = document.getElementById('resolutionDivisor').value;
+    const resultsDiv = document.getElementById('results');
+    const equationsDiv = document.getElementById('equations');
+
+    resultsDiv.innerHTML = '';
+    equationsDiv.innerHTML = '';
+    resultsDiv.style.display = 'none';
+    equationsDiv.style.display = 'none';
+
+    let totalUncertainty = 0;
+    window.equations = [];
+    const detailedResults = [];
+
+    for (let index = 0; index < subParameters.length; index++) {
+        const value = parseFloat(document.getElementById(`subParamValue${index}`).value);
+        const type = document.getElementById(`subParamType${index}`).value;
+        if (!value) {
+            showError(`لطفاً مقدار اندازه‌گیری برای زیرپارامتر ${index + 1} وارد کنید.`);
+            return;
+        }
+        if (type !== 'constant') {
+            const testCount = parseInt(document.getElementById(`subParamTests${index}`).value) || 0;
+            if (testCount < 1) {
+                showError(`تعداد تست‌های تکراری برای زیرپارامتر ${index + 1} باید حداقل 1 باشد.`);
+                return;
+            }
+            for (let j = 0; j < testCount; j++) {
+                const testValue = parseFloat(document.getElementById(`testValue${index}_${j}`).value);
+                if (isNaN(testValue)) {
+                    showError(`لطفاً مقدار تست ${j + 1} برای زیرپارامتر ${index + 1} را وارد کنید.`);
+                    return;
+                }
+            }
+        }
+    }
+
+    console.log('=== شروع محاسبات عدم قطعیت ===');
+    subParameters.forEach((param, index) => {
+        const paramName = document.getElementById(`subParamName${index}`).value;
+        const value = parseFloat(document.getElementById(`subParamValue${index}`).value);
+        const type = document.getElementById(`subParamType${index}`).value;
+
+        console.log(`--- زیرپارامتر ${index + 1}: ${paramName} (${type}) ---`);
+        console.log(`مقدار اندازه‌گیری: ${value}`);
+
+        if (type === 'constant') {
+            console.log(`${paramName} ثابت است. عدم قطعیت صفر.`);
+            window.equations.push(`\\text{${paramName} ثابت است} \\Rightarrow u_{${param.symbol}} = 0`);
+            detailedResults.push({
+                name: paramName,
+                value: value,
+                tests: [],
+                mean: 0,
+                standardDeviation: 0,
+                u_repeatability: 0,
+                u_resolution: 0,
+                u_calibration: 0,
+                u_drift: 0,
+                ui: 0,
+                partialDerivative: 0,
+                partialDerivativeDisplay: '0',
+                partialDerivativeFormula: `\\frac{\\partial f}{\\partial ${param.symbol}}`,
+                contribution: 0,
+                resolution: 0,
+                resolutionDist: '',
+                calibration: 0,
+                drift: 0
+            });
+            return;
+        }
+
+        const testCount = parseInt(document.getElementById(`subParamTests${index}`).value) || 0;
+        const tests = [];
+        for (let j = 0; j < testCount; j++) {
+            const testValue = parseFloat(document.getElementById(`testValue${index}_${j}`).value);
+            if (!isNaN(testValue)) tests.push(testValue);
+        }
+
+        const resolution = parseFloat(document.getElementById(`subParamResolution${index}`).value) || 0;
+        const resolutionDist = document.getElementById(`subParamResolutionDist${index}`).value;
+        const calibration = parseFloat(document.getElementById(`subParamCalibration${index}`).value) || 0;
+        const drift = parseFloat(document.getElementById(`subParamDrift${index}`).value) || 0;
+
+        const mean = tests.length ? tests.reduce((sum, val) => sum + val, 0) / tests.length : 0;
+        const variance = tests.length > 1 ? 
+            tests.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (tests.length - 1) : 0;
+        const standardDeviation = Math.sqrt(variance);
+        const u_repeatability = tests.length > 0 ? standardDeviation / Math.sqrt(tests.length) : 0;
+
+        let u_resolution = 0;
+        if (resolution > 0) {
+            if (resolutionDist === 'rectangular') {
+                u_resolution = resolution / (resolutionDivisor === 'sqrt3' ? Math.sqrt(3) : 2 * Math.sqrt(3));
+            } else if (resolutionDist === 'triangular') {
+                u_resolution = resolution / Math.sqrt(6);
+            } else {
+                u_resolution = resolution;
+            }
+        }
+
+        const u_calibration = calibration > 0 ? calibration / 2 : 0;
+        const u_drift = drift || 0;
+
+        const ui = Math.sqrt(
+            Math.pow(u_resolution, 2) +
+            Math.pow(u_repeatability, 2) +
+            Math.pow(u_calibration, 2) +
+            Math.pow(u_drift, 2)
+        );
+
+        let partialDerivative = 1;
+        let partialDerivativeDisplay = '1';
+        let partialDerivativeFormula = `\\frac{\\partial f}{\\partial ${param.symbol}}`;
+
+        if (mainParameter !== 'custom') {
+            const partialExpr = predefinedParameters[mainParameter].partialDerivatives[param.symbol];
+            if (partialExpr) {
+                const scope = {};
+                subParameters.forEach((p, i) => {
+                    scope[p.symbol] = parseFloat(document.getElementById(`subParamValue${i}`).value) || 1;
+                });
+                try {
+                    partialDerivative = math.evaluate(partialExpr, scope);
+                    partialDerivativeDisplay = partialExpr.replace(/\*/g, '\\cdot').replace(/\^(\w+)/g, '^{$1}');
+                } catch (e) {
+                    showError(`خطا در محاسبه مشتق جزئی: ${e.message}`);
+                    return;
+                }
+            }
+        } else {
+            const formula = document.getElementById('formula').value.split('=')[1].trim();
+            try {
+                const derivative = math.derivative(formula, param.symbol);
+                let derivativeStr = derivative.toString();
+                partialDerivativeDisplay = derivativeStr.replace(/\*/g, ' \\cdot ');
+                const scope = {};
+                subParameters.forEach((p, i) => {
+                    scope[p.symbol] = parseFloat(document.getElementById(`subParamValue${i}`).value) || 1;
+                });
+                partialDerivative = derivative.evaluate(scope);
+            } catch (e) {
+                showError(`خطا در مشتق فرمول سفارشی: ${e.message}`);
+                return;
+            }
+        }
+
+        const contribution = Math.pow(partialDerivative * ui, 2);
+        totalUncertainty += contribution;
+
+        detailedResults.push({
+            name: paramName,
+            value: value,
+            tests: tests,
+            mean: mean,
+            standardDeviation: standardDeviation,
+            u_repeatability: u_repeatability,
+            u_resolution: u_resolution,
+            u_calibration: u_calibration,
+            u_drift: u_drift,
+            ui: ui,
+            partialDerivative: partialDerivative,
+            partialDerivativeDisplay: partialDerivativeDisplay,
+            partialDerivativeFormula: partialDerivativeFormula,
+            contribution: contribution,
+            resolution: resolution,
+            resolutionDist: resolutionDist,
+            calibration: calibration,
+            drift: drift
+        });
+
+        const resolutionDenom = resolutionDist === 'rectangular' ? 
+            (resolutionDivisor === 'sqrt3' ? '\\sqrt{3}' : '2\\sqrt{3}') : 
+            resolutionDist === 'triangular' ? '\\sqrt{6}' : '1';
+
+        if (tests.length > 1) {
+            window.equations.push(`s_{${paramName}} = \\sqrt{\\frac{\\sum_{i=1}^{${tests.length}}(x_i - \\bar{x})^2}{${tests.length-1}}} = ${standardDeviation.toFixed(4)}`);
+            window.equations.push(`u_{rep,${paramName}} = \\frac{s_{${paramName}}}{\\sqrt{${tests.length}}} = ${u_repeatability.toFixed(4)}`);
+        }
+        if (resolution > 0) {
+            window.equations.push(`u_{res,${paramName}} = \\frac{${resolution.toFixed(3)}}{${resolutionDenom}} = ${u_resolution.toFixed(4)}`);
+        }
+        if (calibration > 0) {
+            window.equations.push(`u_{cal,${paramName}} = \\frac{${calibration.toFixed(3)}}{2} = ${u_calibration.toFixed(4)}`);
+        }
+        window.equations.push(`${partialDerivativeFormula} = ${partialDerivativeDisplay} = ${partialDerivative.toFixed(4)}`);
+        let uncertaintyTerms = [];
+        if (u_resolution > 0) uncertaintyTerms.push(`u_{res,${paramName}}^2`);
+        if (u_repeatability > 0) uncertaintyTerms.push(`u_{rep,${paramName}}^2`);
+        if (u_calibration > 0) uncertaintyTerms.push(`u_{cal,${paramName}}^2`);
+        if (u_drift > 0) uncertaintyTerms.push(`u_{drift,${paramName}}^2`);
+        window.equations.push(`u_{${paramName}} = \\sqrt{${uncertaintyTerms.join(' + ')}} = ${ui.toFixed(4)}`);
+        window.equations.push(`\\left(\\frac{\\partial f}{\\partial ${param.symbol}}\\right)^2 \\cdot u_{${paramName}}^2 = (${partialDerivative.toFixed(4)})^2 \\cdot (${ui.toFixed(4)})^2 = ${contribution.toFixed(6)}`);
+    });
+
+    externalSources.forEach((_, index) => {
+    const sourceName = document.getElementById(`sourceName${index}`).value || `منبع ${index + 1}`;
+    const uncertainty = parseFloat(document.getElementById(`sourceUncertainty${index}`).value) || 0;
+    const k = parseFloat(document.getElementById(`sourceK${index}`).value) || 2;
+
+    if (uncertainty > 0) {
+        const u = uncertainty / k;  // فقط این تقسیم
+        const contribution = u * u;  // u^2
+        totalUncertainty += contribution;
+
+        // نمایش معادله
+        window.equations.push(`u_{${sourceName}} = \\frac{${uncertainty.toFixed(4)}}{${k}} = ${u.toFixed(4)}`);
+    }
+});
+
+    const combinedUncertainty = Math.sqrt(totalUncertainty);
+    const expandedUncertainty = 2 * combinedUncertainty;
+
+    if (combinedUncertainty === 0 || isNaN(combinedUncertainty)) {
+        showError('عدم قطعیت محاسبه‌شده صفر یا نامعتبر است.');
+        return;
+    }
+
+    window.equations.push(`u_c = \\sqrt{\\sum_{i=1}^{n} \\left(\\frac{\\partial f}{\\partial x_i}\\right)^2 u_i^2} = \\sqrt{${totalUncertainty.toFixed(6)}} = ${combinedUncertainty.toFixed(4)}`);
+    window.equations.push(`U = k \\times u_c = 2 \\times ${combinedUncertainty.toFixed(4)} = ${expandedUncertainty.toFixed(4)}`);
+
+    window.finalResults = { combinedUncertainty, expandedUncertainty, totalUncertainty };
+    window.detailedResults = detailedResults; // یا فقط detailedResults = detailedResults;
+    displayResults(combinedUncertainty, expandedUncertainty, detailedResults);
+    displayEquations();
+    document.getElementById('export-section').style.display = 'block';
+    updateStepIndicator(4);
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+function displayResults(combinedUncertainty, expandedUncertainty, detailedResults) {
+    const resultsDiv = document.getElementById('results');
+    const actualCombined = window.finalResults?.combinedUncertainty ?? combinedUncertainty;
+    const actualExpanded = window.finalResults?.expandedUncertainty ?? expandedUncertainty;
+    const totalVariance = window.finalResults?.totalUncertainty ?? 0;
+
+    resultsDiv.innerHTML = `
+        <h3 style="text-align: center; color: var(--primary-color); margin-bottom: 2rem;">
+            <i class="fas fa-chart-bar"></i> نتایج محاسبات عدم قطعیت
+        </h3>
+        <div class="result-item">
+            <span class="result-label"><i class="fas fa-sum"></i> مجموع واریانس‌ها:</span>
+            <span class="result-value">${totalVariance.toFixed(8)}</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label"><i class="fas fa-calculator"></i> عدم قطعیت ترکیبی (uc):</span>
+            <span class="result-value">${actualCombined.toFixed(6)}</span>
+        </div>
+        <div class="result-item">
+            <span class="result-label"><i class="fas fa-expand-arrows-alt"></i> عدم قطعیت گسترده (U, K=2):</span>
+            <span class="result-value">${actualExpanded.toFixed(6)}</span>
+        </div>
+        <div class="mt-4">
+            <h4 style="color: var(--secondary-color); margin-bottom: 1rem;"><i class="fas fa-list-ul"></i> جزئیات محاسبات زیرپارامترها:</h4>
+            ${detailedResults.map(result => `
+                <div class="form-section" style="margin-bottom: 1rem;">
+                    <h5 style="color: var(--primary-color); margin-bottom: 0.5rem;"><i class="fas fa-wrench"></i> ${result.name} ${result.ui === 0 ? '(ثابت)' : ''}</h5>
+                    <div class="parameter-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; font-size: 0.85rem;">
+                        <div><strong>مقدار:</strong> ${result.value}</div>
+                        <div><strong>u کل:</strong> ${result.ui.toFixed(4)}</div>
+                        <div><strong>مشتق جزئی:</strong> ${result.partialDerivative.toFixed(4)}</div>
+                        <div><strong>سهم:</strong> ${result.contribution.toFixed(6)}</div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    resultsDiv.style.display = 'block';
+    resultsDiv.classList.add('fade-in');
+}
+
+function displayEquations() {
+    const equationsDiv = document.getElementById('equations');
+    equationsDiv.innerHTML = '<h4 style="text-align: center; margin-bottom: 2rem;"><i class="fas fa-square-root-alt"></i> معادلات تفصیلی محاسبات:</h4>';
+    window.equations.forEach((eq, i) => {
+        const eqDiv = document.createElement('div');
+        eqDiv.className = 'math-equation fade-in';
+        eqDiv.style.animationDelay = `${i * 0.1}s`;
+        eqDiv.style.margin = '0.5rem 0';
+        equationsDiv.appendChild(eqDiv);
+        try {
+            katex.render(eq, eqDiv, { throwOnError: false, displayMode: true, strict: false });
+        } catch (e) {
+            eqDiv.innerHTML = `<code style="background: #f1f5f9; padding: 0.5rem; border-radius: 4px; display: block;">${eq}</code>`;
+        }
+    });
+    equationsDiv.style.display = 'block';
+}
+
+function showError(message) {
+    const resultsDiv = document.getElementById('results');
+    resultsDiv.innerHTML = `
+        <div class="alert alert-danger">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>خطا:</strong> ${message}
+        </div>
+    `;
+    resultsDiv.style.display = 'block';
+}
+
+function exportToExcel() {
+    if (!window.equations || !window.finalResults) {
+        showError('هیچ داده‌ای برای صادرات یافت نشد.');
+        return;
+    }
+    try {
+        const ws_data = [
+            ['گزارش تفصیلی محاسبه عدم قطعیت'],
+            ['تاریخ تولید:', new Date().toLocaleDateString('fa-IR')],
+            ['ساعت تولید:', new Date().toLocaleTimeString('fa-IR')],
+            [''],
+            ['=== نتایج نهایی ==='],
+            ['مجموع واریانس‌ها:', window.finalResults.totalUncertainty.toFixed(8)],
+            ['عدم قطعیت ترکیبی (uc):', window.finalResults.combinedUncertainty.toFixed(6)],
+            ['عدم قطعیت گسترده (U, K=2):', window.finalResults.expandedUncertainty.toFixed(6)],
+            [''],
+            ['=== جزئیات زیرپارامترها ==='],
+            ['نام', 'مقدار', 'نوع', 'u کل', 'مشتق جزئی', 'سهم']
+        ];
+
+        subParameters.forEach((_, index) => {
+            const name = document.getElementById(`subParamName${index}`).value || `زیرپارامتر ${index + 1}`;
+            const value = parseFloat(document.getElementById(`subParamValue${index}`).value) || 0;
+            const type = document.getElementById(`subParamType${index}`).value;
+            const result = window.detailedResults.find(r => r.name === name) || {};
+
+            ws_data.push([
+                name, value.toFixed(4), type === 'constant' ? 'ثابت' : 'متغیر',
+                (result.ui || 0).toFixed(6),
+                (result.partialDerivative || 0).toFixed(6),
+                (result.contribution || 0).toFixed(8)
+            ]);
+        });
+
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(ws_data);
+        XLSX.utils.book_append_sheet(wb, ws, 'گزارش تفصیلی');
+        const fileName = `uncertainty_detailed_report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, fileName);
+        setTimeout(() => {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-info fade-in';
+            alertDiv.innerHTML = `<i class="fas fa-check-circle"></i> موفقیت! فایل "${fileName}" دانلود شد.`;
+            document.querySelector('#step4 .card-body').appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }, 500);
+    } catch (error) {
+        showError(`خطا در ایجاد فایل اکسل: ${error.message}`);
+    }
+}
+
+function scrollToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    toggleCustomParameter();
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('fade-in');
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    document.querySelectorAll('.card').forEach(card => observer.observe(card));
+});
+</script>
+    <!-- ========== کد PWA رو اینجا بذارید ========== -->
+    <script>
+        // ثبت سرویس ورکر برای PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker ثبت شد:', registration);
+                    })
+                    .catch(error => {
+                        console.log('خطا در ثبت ServiceWorker:', error);
+                    });
+            });
+        }
+
+        // نمایش دکمه نصب روی اندروید
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallButton();
+        });
+
+        function showInstallButton() {
+            // بررسی اینکه دکمه قبلاً ساخته نشده باشه
+            if (document.getElementById('pwaInstallBtn')) return;
+            
+            const installBtn = document.createElement('button');
+            installBtn.id = 'pwaInstallBtn';
+            installBtn.innerHTML = '<i class="fas fa-download"></i> نصب اپلیکیشن';
+            installBtn.className = 'btn btn-success position-fixed bottom-0 start-50 translate-middle-x mb-3';
+            installBtn.style.zIndex = '9999';
+            installBtn.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+            installBtn.style.padding = '12px 24px';
+            installBtn.style.borderRadius = '50px';
+            installBtn.style.fontWeight = 'bold';
+            
+            installBtn.onclick = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const result = await deferredPrompt.userChoice;
+                    if (result.outcome === 'accepted') {
+                        console.log('کاربر اپلیکیشن رو نصب کرد');
+                        installBtn.remove();
+                    }
+                    deferredPrompt = null;
+                }
+            };
+            
+            // فقط اگر هنوز نصب نشده باشه نشون بده
+            if (!window.matchMedia('(display-mode: standalone)').matches) {
+                document.body.appendChild(installBtn);
+            }
+        }
+    </script>
+</body>
+</html>
