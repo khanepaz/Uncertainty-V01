@@ -25,7 +25,7 @@
 
 ## 🚀 دموی آنلاین
 
-[مشاهده دموی زنده](https://your-username.github.io/uncertainty-calculator/)
+[مشاهده دموی زنده](https://khanepaz.github.io/uncertainty-V01/)
 
 ---
 
